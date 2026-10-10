@@ -1,0 +1,6 @@
+@PETMSCRUD_HostAddress = http://localhost:5072
+
+GET {{PETMSCRUD_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
