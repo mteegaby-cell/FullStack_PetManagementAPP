@@ -22,9 +22,7 @@ public static class SeedData
 
         await db.Database.MigrateAsync();
 
-        foreach (var role in new[] { "Admin", "Groomer", "PetOwner" })
-            if (!await roles.RoleExistsAsync(role))
-                await roles.CreateAsync(new IdentityRole(role));
+
 
         async Task<ApplicationUser> EnsureUser(string email, string role)
         {
