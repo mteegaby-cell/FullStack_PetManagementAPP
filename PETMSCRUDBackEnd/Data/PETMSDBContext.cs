@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using PETMSCRUD.Models.Entities;
+using PETMSCRUD.Models;
 
 namespace PETMSCRUD.Data;
 
@@ -77,8 +77,8 @@ namespace PETMSCRUD.Data;
 
             // ---- Link domain profiles to Identity accounts ----
             b.Entity<PetOwner>().HasOne(o => o.User).WithMany()
-                .HasForeignKey(o => o.UserId).OnDelete(DeleteBehavior.SetNull);
+                .HasForeignKey(o => o.UserId).OnDelete(DeleteBehavior.Restrict);
             b.Entity<Groomer>().HasOne(g => g.User).WithMany()
-                .HasForeignKey(g => g.UserId).OnDelete(DeleteBehavior.SetNull);
+                .HasForeignKey(g => g.UserId).OnDelete(DeleteBehavior.Restrict);
     }
     }

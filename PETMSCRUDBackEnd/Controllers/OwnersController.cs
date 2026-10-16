@@ -86,7 +86,7 @@ public class OwnersController(PETMSDBContext db, AccountService accounts) : Cont
     {
         var owner = await db.PetOwners.FindAsync(id);
         if (owner is null) return NotFound();
-        if (await db.Pets.AnyAsync(p => p.OwnerId == id) || await db.Appointments.AnyAsync(a => a.PetOwnerId == id))
+        if (await db.Pets.AnyAsync(p => p.PetOwnerId == id) || await db.Appointments.AnyAsync(a => a.PetOwnerId == id))
             return Conflict(new { message = "Cannot delete an owner who still has pets or appointments. Remove those first." });
 
         db.PetOwners.Remove(owner);

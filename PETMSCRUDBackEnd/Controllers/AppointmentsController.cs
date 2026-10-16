@@ -20,8 +20,8 @@ public class AppointmentsController(PETMSDBContext db) : ControllerBase
     private static readonly Expression<Func<Appointment, AppointmentResponse>> ToResponse = a =>
         new AppointmentResponse(a.Id, a.AppointmentDate, a.AppointmentTime,
             a.PetId, a.Pet.PetName, a.PetOwnerId, a.PetOwner.Name + " " + a.PetOwner.Surname,
-            a.GroomerId, a.Groomer.Name + " " + a.Groomer.Surname,
-            a.ServiceId, a.Service.ServiceName, a.Service.DurationMinutes, a.Service.Price,
+            a.GroomerId.Value, a.Groomer.Name + " " + a.Groomer.Surname,
+            a.GroomingServiceId, a.GroomingService.ServiceName, a.GroomingService.DurationMinutes, a.GroomingService.Price,
             a.Status, a.Notes);
 
     // GET api/appointments?status=Scheduled&date=2026-10-20&groomerId=1&petId=2   (status filtering)
@@ -55,8 +55,8 @@ public class AppointmentsController(PETMSDBContext db) : ControllerBase
         var a = new Appointment
         {
             AppointmentDate = r.AppointmentDate, AppointmentTime = r.AppointmentTime,
-            PetId = r.PetId, PetOwnerId = pet!.OwnerId,      // owner is derived from the pet => always consistent
-            GroomerId = r.GroomerId, ServiceId = r.ServiceId, Status = r.Status, Notes = r.Notes
+            PetId = r.PetId, PetOwnerId = pet!.PetOwnerId,      // owner is derived from the pet => always consistent
+            GroomerId = r.GroomerId, GroomingServiceId = r.ServiceId, Status = r.Status, Notes = r.Notes
         };
         db.Appointments.Add(a);
         await db.SaveChangesAsync();
@@ -74,8 +74,8 @@ public class AppointmentsController(PETMSDBContext db) : ControllerBase
         if (error is not null) return BadRequest(new { message = error });
 
         a.AppointmentDate = r.AppointmentDate; a.AppointmentTime = r.AppointmentTime;
-        a.PetId = r.PetId; a.PetOwnerId = pet!.OwnerId;
-        a.GroomerId = r.GroomerId; a.ServiceId = r.ServiceId; a.Status = r.Status; a.Notes = r.Notes;
+        a.PetId = r.PetId; a.PetOwnerId = pet!.PetOwnerId;
+        a.GroomerId = r.GroomerId; a.Id = r.ServiceId; a.Status = r.Status; a.Notes = r.Notes;
         await db.SaveChangesAsync();
         return NoContent();
     }
@@ -85,7 +85,7 @@ public class AppointmentsController(PETMSDBContext db) : ControllerBase
     {
         var a = await db.Appointments.FindAsync(id);
         if (a is null) return NotFound();
-        if (await db.GroomingRecords.AnyAsync(g => g.AppointmentId == id))
+        if (await db.GroomingRecords.AnyAsync(g => g.Id == id))
             return Conflict(new { message = "This appointment has a grooming record. Cancel it instead of deleting." });
 
         db.Appointments.Remove(a);
@@ -120,7 +120,7 @@ public class AppointmentsController(PETMSDBContext db) : ControllerBase
 
         // Same-day, non-cancelled appointments for this groomer OR this pet.
         int exclude = excludeId ?? 0;
-        var sameDay = await db.Appointments.Include(x => x.Service)
+        var sameDay = await db.Appointments.Include(x => x.GroomingService)
             .Where(x => x.AppointmentDate == r.AppointmentDate
                      && x.Status != AppointmentStatus.Cancelled
                      && x.Id != exclude
@@ -130,7 +130,7 @@ public class AppointmentsController(PETMSDBContext db) : ControllerBase
         foreach (var x in sameDay)
         {
             int xs = x.AppointmentTime.Hour * 60 + x.AppointmentTime.Minute;
-            int xe = xs + x.Service.DurationMinutes;
+            int xe = xs + x.GroomingService.DurationMinutes;
             bool overlaps = start < xe && xs < end;             // classic interval-overlap test
             if (!overlaps) continue;
 

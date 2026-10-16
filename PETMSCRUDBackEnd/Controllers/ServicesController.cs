@@ -70,7 +70,7 @@ public class ServicesController(PETMSDBContext db) : ControllerBase
     {
         var s = await db.GroomingServices.FindAsync(id);
         if (s is null) return NotFound();
-        if (await db.Appointments.AnyAsync(a => a.ServiceId == id) || await db.GroomingRecords.AnyAsync(g => g.ServiceId == id))
+        if (await db.Appointments.AnyAsync(a => a.GroomingServiceId == id) || await db.GroomingRecords.AnyAsync(g => g.GroomingServiceId == id))
             return Conflict(new { message = "This service is used by appointments/records. Set its status to Inactive instead." });
 
         db.GroomingServices.Remove(s);

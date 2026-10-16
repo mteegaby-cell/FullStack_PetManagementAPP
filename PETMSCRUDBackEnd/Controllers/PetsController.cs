@@ -2,20 +2,20 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PawsCare.Api.Data;
-using PawsCare.Api.Dtos;
-using PawsCare.Api.Models;
+using PETMSCRUD.Data;
+using PETMSCRUD.Dtos;
+using PETMSCRUD.Models;
 
-namespace PawsCare.Api.Controllers;
+namespace PETMSCRUD.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = Roles.Admin)]
-public class PetsController(AppDbContext db) : ControllerBase
+public class PetsController(PETMSDBContext db) : ControllerBase
 {
     private static readonly Expression<Func<Pet, PetResponse>> ToResponse = p =>
         new PetResponse(p.Id, p.PetNumber, p.PetName, p.Species, p.Breed, p.Gender, p.DateOfBirth,
-            p.Colour, p.Weight, p.MedicalNotes, p.OwnerId, p.Owner.Name + " " + p.Owner.Surname);
+            p.Colour, p.Weight, p.MedicalNotes, p.PetOwnerId, p.Owner.Name + " " + p.Owner.Surname);
 
     // GET api/pets?petNumber=&petName=&ownerName=&ownerId=
     [HttpGet]
@@ -30,7 +30,7 @@ public class PetsController(AppDbContext db) : ControllerBase
         if (!string.IsNullOrWhiteSpace(ownerName))
             q = q.Where(p => p.Owner.Name.Contains(ownerName) || p.Owner.Surname.Contains(ownerName)
                           || (p.Owner.Name + " " + p.Owner.Surname).Contains(ownerName));
-        if (ownerId.HasValue) q = q.Where(p => p.OwnerId == ownerId.Value);
+        if (ownerId.HasValue) q = q.Where(p => p.PetOwnerId == ownerId.Value);
 
         return await q.OrderBy(p => p.PetName).Select(ToResponse).ToListAsync();
     }
@@ -98,6 +98,6 @@ public class PetsController(AppDbContext db) : ControllerBase
     {
         p.PetNumber = r.PetNumber; p.PetName = r.PetName; p.Species = r.Species; p.Breed = r.Breed;
         p.Gender = r.Gender; p.DateOfBirth = r.DateOfBirth; p.Colour = r.Colour; p.Weight = r.Weight;
-        p.MedicalNotes = r.MedicalNotes; p.OwnerId = r.OwnerId;
+        p.MedicalNotes = r.MedicalNotes; p.PetOwnerId = r.OwnerId;
     }
 }

@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
-namespace PETMSCRUD.Models.Entities;
+namespace PETMSCRUD.Models;
 
-public enum Gender { Male, Female }
-public enum AppointmentStatus { Scheduled, CheckedIn, InProgress, Completed, Cancelled }
-
-public class ApplicationUser : IdentityUser { }
+public class ApplicationUser : IdentityUser 
+{
+    public string? FullName { get; set; }
+}
 
 public class PetOwner
 {
@@ -18,7 +18,7 @@ public class PetOwner
     [Required, MaxLength(20)] public string PhoneNumber { get; set; } = "";
     [Required, MaxLength(200)] public string HomeAddress { get; set; } = "";
 
-    public string UserId { get; set; } = "";
+    public string? UserId { get; set; } = "";
     public ApplicationUser? User { get; set; }
 
     public ICollection<Pet> Pets { get; set; } = new List<Pet>();
@@ -59,6 +59,8 @@ public class Groomer
     public ApplicationUser? User { get; set; }
 
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
+    public ICollection<GroomingRecord> GroomingRecords { get; set; } = new List<GroomingRecord>();
 }
 
 public class GroomingService
@@ -69,7 +71,9 @@ public class GroomingService
     public int DurationMinutes { get; set; }
     public decimal Price { get; set; }
     public bool IsActive { get; set; } = true;   // "Service Status"
+    public ServiceStatus Status { get; set; } = ServiceStatus.Active;
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public ICollection<GroomingRecord> GroomingRecords { get; set; } = new List<GroomingRecord>();
 }
 
 public class Appointment
@@ -81,7 +85,7 @@ public class Appointment
     [MaxLength(500)] public string? Notes { get; set; }
 
     public int PetId { get; set; }
-    public Pet? Pet { get; set; }
+    public Pet? Pet { get; set; } = null!;
 
     public int PetOwnerId { get; set; }
     public PetOwner? PetOwner { get; set; }
@@ -90,7 +94,8 @@ public class Appointment
     public Groomer? Groomer { get; set; }
 
     public int GroomingServiceId { get; set; }
-    public GroomingService? GroomingService { get; set; }
+    public GroomingService GroomingService { get; set; } = null;
+    public GroomingRecord? GroomingRecord { get; set; }
 }
 
 public class GroomingRecord
@@ -104,6 +109,8 @@ public class GroomingRecord
 
     public int GroomerId { get; set; }
     public Groomer? Groomer { get; set; }
+    public int AppointmentId { get; set; }
+    public Appointment? Appointment { get; set; }
 
     public int GroomingServiceId { get; set; }   // "Service Performed"
     public GroomingService? GroomingService { get; set; }

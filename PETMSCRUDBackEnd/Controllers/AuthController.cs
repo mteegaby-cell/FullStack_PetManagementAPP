@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PETMSCRUD.Data;
 using PETMSCRUD.Dtos;
-using PETMSCRUD.Models.Entities;
+using PETMSCRUD.Models;
 using PETMSCRUD.Services;
 
 namespace PETMSCRUD.Controllers;
