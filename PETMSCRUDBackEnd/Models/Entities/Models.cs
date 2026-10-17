@@ -55,7 +55,7 @@ public class Groomer
     [Required, MaxLength(20)] public string PhoneNumber { get; set; } = "";
     [Required, MaxLength(100)] public string Specialization { get; set; } = "";
 
-    public string UserId { get; set; } = "";
+    public string? UserId { get; set; }
     public ApplicationUser? User { get; set; }
 
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();

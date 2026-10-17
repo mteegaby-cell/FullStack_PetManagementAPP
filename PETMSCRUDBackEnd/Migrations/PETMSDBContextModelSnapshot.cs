@@ -155,7 +155,7 @@ namespace PETMSCRUD.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.ApplicationUser", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -173,9 +173,6 @@ namespace PETMSCRUD.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -223,7 +220,7 @@ namespace PETMSCRUD.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.Appointment", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.Appointment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -253,10 +250,8 @@ namespace PETMSCRUD.Migrations
                     b.Property<int>("PetOwnerId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -268,10 +263,10 @@ namespace PETMSCRUD.Migrations
 
                     b.HasIndex("PetOwnerId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointments", (string)null);
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.Groomer", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.Groomer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -315,19 +310,16 @@ namespace PETMSCRUD.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
                     b.HasIndex("StaffNumber")
                         .IsUnique();
 
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Groomers");
+                    b.ToTable("Groomers", (string)null);
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.GroomingRecord", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.GroomingRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -335,22 +327,13 @@ namespace PETMSCRUD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AppointmentId")
-                        .HasColumnType("int");
-
                     b.Property<int>("GroomerId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GroomerId1")
                         .HasColumnType("int");
 
                     b.Property<DateOnly>("GroomingDate")
                         .HasColumnType("date");
 
                     b.Property<int>("GroomingServiceId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GroomingServiceId1")
                         .HasColumnType("int");
 
                     b.Property<string>("Notes")
@@ -362,23 +345,16 @@ namespace PETMSCRUD.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppointmentId")
-                        .IsUnique();
-
                     b.HasIndex("GroomerId");
-
-                    b.HasIndex("GroomerId1");
 
                     b.HasIndex("GroomingServiceId");
 
-                    b.HasIndex("GroomingServiceId1");
-
                     b.HasIndex("PetId");
 
-                    b.ToTable("GroomingRecords");
+                    b.ToTable("GroomingRecords", (string)null);
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.GroomingService", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.GroomingService", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -405,17 +381,12 @@ namespace PETMSCRUD.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
                     b.HasKey("Id");
 
-                    b.ToTable("GroomingServices");
+                    b.ToTable("GroomingServices", (string)null);
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.Pet", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.Pet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -434,10 +405,8 @@ namespace PETMSCRUD.Migrations
                     b.Property<DateOnly>("DateOfBirth")
                         .HasColumnType("date");
 
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
 
                     b.Property<string>("MedicalNotes")
                         .HasMaxLength(500)
@@ -472,10 +441,10 @@ namespace PETMSCRUD.Migrations
 
                     b.HasIndex("PetOwnerId");
 
-                    b.ToTable("Pets");
+                    b.ToTable("Pets", (string)null);
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.PetOwner", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.PetOwner", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -514,21 +483,18 @@ namespace PETMSCRUD.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.HasIndex("OwnerNumber")
                         .IsUnique();
 
                     b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
+                        .IsUnique();
 
-                    b.ToTable("PetOwners");
+                    b.ToTable("PetOwners", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -542,7 +508,7 @@ namespace PETMSCRUD.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("PETMSCRUD.Models.ApplicationUser", null)
+                    b.HasOne("PETMSCRUD.Models.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -551,7 +517,7 @@ namespace PETMSCRUD.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("PETMSCRUD.Models.ApplicationUser", null)
+                    b.HasOne("PETMSCRUD.Models.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -566,7 +532,7 @@ namespace PETMSCRUD.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PETMSCRUD.Models.ApplicationUser", null)
+                    b.HasOne("PETMSCRUD.Models.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -575,33 +541,33 @@ namespace PETMSCRUD.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("PETMSCRUD.Models.ApplicationUser", null)
+                    b.HasOne("PETMSCRUD.Models.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.Appointment", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.Appointment", b =>
                 {
-                    b.HasOne("PETMSCRUD.Models.Groomer", "Groomer")
+                    b.HasOne("PETMSCRUD.Models.Entities.Groomer", "Groomer")
                         .WithMany("Appointments")
                         .HasForeignKey("GroomerId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("PETMSCRUD.Models.GroomingService", "GroomingService")
+                    b.HasOne("PETMSCRUD.Models.Entities.GroomingService", "GroomingService")
                         .WithMany("Appointments")
                         .HasForeignKey("GroomingServiceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PETMSCRUD.Models.Pet", "Pet")
+                    b.HasOne("PETMSCRUD.Models.Entities.Pet", "Pet")
                         .WithMany("Appointments")
                         .HasForeignKey("PetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PETMSCRUD.Models.PetOwner", "PetOwner")
+                    b.HasOne("PETMSCRUD.Models.Entities.PetOwner", "PetOwner")
                         .WithMany("Appointments")
                         .HasForeignKey("PetOwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -616,9 +582,9 @@ namespace PETMSCRUD.Migrations
                     b.Navigation("PetOwner");
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.Groomer", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.Groomer", b =>
                 {
-                    b.HasOne("PETMSCRUD.Models.ApplicationUser", "User")
+                    b.HasOne("PETMSCRUD.Models.Entities.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -627,41 +593,25 @@ namespace PETMSCRUD.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.GroomingRecord", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.GroomingRecord", b =>
                 {
-                    b.HasOne("PETMSCRUD.Models.Appointment", "Appointment")
-                        .WithOne("GroomingRecord")
-                        .HasForeignKey("PETMSCRUD.Models.GroomingRecord", "AppointmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("PETMSCRUD.Models.Groomer", "Groomer")
+                    b.HasOne("PETMSCRUD.Models.Entities.Groomer", "Groomer")
                         .WithMany()
                         .HasForeignKey("GroomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PETMSCRUD.Models.Groomer", null)
-                        .WithMany("GroomingRecords")
-                        .HasForeignKey("GroomerId1");
-
-                    b.HasOne("PETMSCRUD.Models.GroomingService", "GroomingService")
+                    b.HasOne("PETMSCRUD.Models.Entities.GroomingService", "GroomingService")
                         .WithMany()
                         .HasForeignKey("GroomingServiceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PETMSCRUD.Models.GroomingService", null)
-                        .WithMany("GroomingRecords")
-                        .HasForeignKey("GroomingServiceId1");
-
-                    b.HasOne("PETMSCRUD.Models.Pet", "Pet")
+                    b.HasOne("PETMSCRUD.Models.Entities.Pet", "Pet")
                         .WithMany("GroomingRecords")
                         .HasForeignKey("PetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Appointment");
 
                     b.Navigation("Groomer");
 
@@ -670,9 +620,9 @@ namespace PETMSCRUD.Migrations
                     b.Navigation("Pet");
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.Pet", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.Pet", b =>
                 {
-                    b.HasOne("PETMSCRUD.Models.PetOwner", "Owner")
+                    b.HasOne("PETMSCRUD.Models.Entities.PetOwner", "Owner")
                         .WithMany("Pets")
                         .HasForeignKey("PetOwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -681,43 +631,35 @@ namespace PETMSCRUD.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.PetOwner", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.PetOwner", b =>
                 {
-                    b.HasOne("PETMSCRUD.Models.ApplicationUser", "User")
+                    b.HasOne("PETMSCRUD.Models.Entities.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.Appointment", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.Groomer", b =>
                 {
-                    b.Navigation("GroomingRecord");
+                    b.Navigation("Appointments");
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.Groomer", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.GroomingService", b =>
+                {
+                    b.Navigation("Appointments");
+                });
+
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.Pet", b =>
                 {
                     b.Navigation("Appointments");
 
                     b.Navigation("GroomingRecords");
                 });
 
-            modelBuilder.Entity("PETMSCRUD.Models.GroomingService", b =>
-                {
-                    b.Navigation("Appointments");
-
-                    b.Navigation("GroomingRecords");
-                });
-
-            modelBuilder.Entity("PETMSCRUD.Models.Pet", b =>
-                {
-                    b.Navigation("Appointments");
-
-                    b.Navigation("GroomingRecords");
-                });
-
-            modelBuilder.Entity("PETMSCRUD.Models.PetOwner", b =>
+            modelBuilder.Entity("PETMSCRUD.Models.Entities.PetOwner", b =>
                 {
                     b.Navigation("Appointments");
 
