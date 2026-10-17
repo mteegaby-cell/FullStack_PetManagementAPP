@@ -155,14 +155,14 @@ public class GroomingRecord
 
     [MaxLength(1000)]
     public string? Notes { get; set; }
-
+    public string ServicePerformed { get; set; } = "";
     public int PetId { get; set; }
     public Pet Pet { get; set; } = null!;
 
     public int GroomerId { get; set; }
     public Groomer Groomer { get; set; } = null!;
 
-    public int AppointmentId { get; set; }
+    public int? AppointmentId { get; set; }
     public Appointment Appointment { get; set; } = null!;
 
     public int GroomingServiceId { get; set; }

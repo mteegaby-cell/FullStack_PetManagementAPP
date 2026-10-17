@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using PETMSCRUD.Data;
-using PETMSCRUD.Models.Entities;
+using PETMSCRUD.Models;
 
 namespace PETMSCRUD.Models;
 

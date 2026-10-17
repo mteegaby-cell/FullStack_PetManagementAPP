@@ -15,7 +15,36 @@ using Microsoft.OpenApi;
 using PETMSCRUD.Models;//^^following 3 changed from PETCRUD to PETMSCRUD, added 6 errors lol
 using PETMSCRUD.Data;
 using PETMSCRUD.Services;
-using PETMSCRUD.Models.Entities;
+
+static async Task SeedRolesAsync(IServiceProvider serviceProvider)
+{
+    var roleManager = serviceProvider
+        .GetRequiredService<RoleManager<IdentityRole>>();
+
+    string[] roles =
+    {
+        "ADMIN",
+        "GROOMER",
+        "CUSTOMER"
+    };
+
+    foreach (string role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            var result = await roleManager.CreateAsync(
+                new IdentityRole(role));
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to create role {role}: " +
+                    string.Join(", ",
+                        result.Errors.Select(e => e.Description)));
+            }
+        }
+    }
+}
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.

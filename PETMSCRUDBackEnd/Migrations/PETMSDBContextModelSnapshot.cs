@@ -335,7 +335,7 @@ namespace PETMSCRUD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AppointmentId")
+                    b.Property<int?>("AppointmentId")
                         .HasColumnType("int");
 
                     b.Property<int>("GroomerId")
@@ -360,10 +360,15 @@ namespace PETMSCRUD.Migrations
                     b.Property<int>("PetId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ServicePerformed")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[AppointmentId] IS NOT NULL");
 
                     b.HasIndex("GroomerId");
 
@@ -628,8 +633,7 @@ namespace PETMSCRUD.Migrations
                     b.HasOne("PETMSCRUD.Models.Appointment", "Appointment")
                         .WithOne("GroomingRecord")
                         .HasForeignKey("PETMSCRUD.Models.GroomingRecord", "AppointmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("PETMSCRUD.Models.Groomer", "Groomer")
                         .WithMany()
