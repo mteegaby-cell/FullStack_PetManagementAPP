@@ -4,10 +4,10 @@ import Card from "react-bootstrap/Card";
 import Table from "react-bootstrap/Table";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
-import axios from "axios";
+import api from "./api";
 import GroomingRecordForm from "./GroomingRecordForm";
 
-const API = "https://localhost:7242/api/Groomer";
+const API = "/groomer";
 
 const PetDetails = () => {
   const { id } = useParams();
@@ -19,8 +19,8 @@ const PetDetails = () => {
 
   const load = () => {
     Promise.all([
-      axios.get(`${API}/pets/${id}`),
-      axios.get(`${API}/pets/${id}/history`),
+      api.get(`${API}/pets/${id}`),
+      api.get(`${API}/pets/${id}/history`),
     ])
       .then(([p, h]) => {
         setPet(p.data);

@@ -4,9 +4,9 @@ import Card from "react-bootstrap/Card";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Alert from "react-bootstrap/Alert";
-import axios from "axios";
+import api from "./api";
 
-const API = "https://localhost:7242/api/Groomer";
+const API = "/groomer";
 
 const todayStr = () => {
   const d = new Date();
@@ -20,7 +20,7 @@ const GroomerDashboard = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    Promise.all([axios.get(`${API}/me`), axios.get(`${API}/appointments`)])
+    Promise.all([api.get(`${API}/me`), api.get(`${API}/appointments`)])
       .then(([m, a]) => {
         setMe(m.data);
         setAppts(a.data);

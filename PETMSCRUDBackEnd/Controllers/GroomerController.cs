@@ -10,7 +10,7 @@ namespace LMSCRUD.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = Roles.Admin)]   // PERSON 4: uncomment after Identity is merged
+    [Authorize(Roles = Roles.Groomer)]
     public class GroomerController : ControllerBase
     {
         private readonly PETMSDBContext dbContext;
@@ -61,7 +61,7 @@ namespace LMSCRUD.Controllers
         public async Task<IActionResult> Me()
         {
             var g = await GetCurrentGroomer();
-            if (g == null) return Unauthorized();
+            if (g == null) return StatusCode(403, new { message = "No groomer profile is linked to this login." });
             return Ok(new { g.Id, g.StaffNumber, g.Name, g.Surname, g.Email, g.PhoneNumber, g.Specialization });
         }
 
@@ -70,7 +70,7 @@ namespace LMSCRUD.Controllers
         public async Task<IActionResult> MyAppointments([FromQuery] AppointmentStatus? status)
         {
             var groomer = await GetCurrentGroomer();
-            if (groomer == null) return Unauthorized();
+            if (groomer == null) return StatusCode(403, new { message = "No groomer profile is linked to this login." });
 
             var q = dbContext.Appointments.Where(a => a.GroomerId == groomer.Id);
             if (status.HasValue) q = q.Where(a => a.Status == status.Value);
@@ -97,7 +97,7 @@ namespace LMSCRUD.Controllers
         public async Task<IActionResult> GetAppointment(int id)
         {
             var groomer = await GetCurrentGroomer();
-            if (groomer == null) return Unauthorized();
+            if (groomer == null) return StatusCode(403, new { message = "No groomer profile is linked to this login." });
 
             var a = await dbContext.Appointments
                 .Where(x => x.Id == id && x.GroomerId == groomer.Id)
@@ -124,7 +124,7 @@ namespace LMSCRUD.Controllers
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusDto dto)
         {
             var groomer = await GetCurrentGroomer();
-            if (groomer == null) return Unauthorized();
+            if (groomer == null) return StatusCode(403, new { message = "No groomer profile is linked to this login." });
 
             if (!Enum.TryParse<AppointmentStatus>(dto.Status, true, out var s))
                 return BadRequest("Invalid status.");
@@ -143,7 +143,7 @@ namespace LMSCRUD.Controllers
         public async Task<IActionResult> GetPet(int petId)
         {
             var groomer = await GetCurrentGroomer();
-            if (groomer == null) return Unauthorized();
+            if (groomer == null) return StatusCode(403, new { message = "No groomer profile is linked to this login." });
             if (!await HasAccessToPet(groomer.Id, petId)) return NotFound();
 
             var pet = await dbContext.Pets.Where(p => p.Id == petId)
@@ -168,7 +168,7 @@ namespace LMSCRUD.Controllers
         public async Task<IActionResult> PetHistory(int petId)
         {
             var groomer = await GetCurrentGroomer();
-            if (groomer == null) return Unauthorized();
+            if (groomer == null) return StatusCode(403, new { message = "No groomer profile is linked to this login." });
             if (!await HasAccessToPet(groomer.Id, petId)) return NotFound();
 
             var history = await dbContext.GroomingRecords.Where(r => r.PetId == petId)
@@ -189,7 +189,7 @@ namespace LMSCRUD.Controllers
         public async Task<IActionResult> PetAppointments(int petId)
         {
             var groomer = await GetCurrentGroomer();
-            if (groomer == null) return Unauthorized();
+            if (groomer == null) return StatusCode(403, new { message = "No groomer profile is linked to this login." });
 
             var list = await dbContext.Appointments
                 .Where(a => a.PetId == petId && a.GroomerId == groomer.Id)
@@ -219,15 +219,35 @@ namespace LMSCRUD.Controllers
         public async Task<IActionResult> CreateRecord([FromBody] CreateRecordDto dto)
         {
             var groomer = await GetCurrentGroomer();
-            if (groomer == null) return Unauthorized();
+            if (groomer == null) return StatusCode(403, new { message = "No groomer profile is linked to this login." });
             if (!await HasAccessToPet(groomer.Id, dto.PetId)) return NotFound();
 
+            // A grooming record needs a service, so take it from the appointment.
+            Appointment? appt;
             if (dto.AppointmentId.HasValue)
             {
-                bool ok = await dbContext.Appointments.AnyAsync(a =>
+                appt = await dbContext.Appointments.FirstOrDefaultAsync(a =>
                     a.Id == dto.AppointmentId && a.GroomerId == groomer.Id && a.PetId == dto.PetId);
-                if (!ok) return BadRequest("Appointment does not belong to this groomer and pet.");
+                if (appt == null)
+                    return BadRequest(new { message = "Appointment does not belong to this groomer and pet." });
+                if (await dbContext.GroomingRecords.AnyAsync(r => r.AppointmentId == appt.Id))
+                    return BadRequest(new { message = "This appointment already has a grooming record." });
             }
+            else
+            {
+                // No appointment chosen: use this groomer's latest non-cancelled appointment for the pet.
+                appt = await dbContext.Appointments
+                    .Where(a => a.GroomerId == groomer.Id && a.PetId == dto.PetId
+                                && a.Status != AppointmentStatus.Cancelled)
+                    .OrderByDescending(a => a.AppointmentDate)
+                    .ThenByDescending(a => a.AppointmentTime)
+                    .FirstOrDefaultAsync();
+                if (appt == null)
+                    return BadRequest(new { message = "No appointment found for this pet." });
+            }
+
+            // Link the record to the appointment only if that appointment has no record yet.
+            bool alreadyLinked = await dbContext.GroomingRecords.AnyAsync(r => r.AppointmentId == appt.Id);
 
             var record = new GroomingRecord
             {
@@ -235,8 +255,9 @@ namespace LMSCRUD.Controllers
                 ServicePerformed = dto.ServicePerformed.Trim(),
                 Notes = dto.Notes?.Trim(),
                 PetId = dto.PetId,
-                AppointmentId = dto.AppointmentId,
-                GroomerId = groomer.Id               // set server-side, never from the client
+                GroomerId = groomer.Id,                 // set server-side, never from the client
+                GroomingServiceId = appt.GroomingServiceId,
+                AppointmentId = alreadyLinked ? null : appt.Id
             };
             dbContext.GroomingRecords.Add(record);
             await dbContext.SaveChangesAsync();

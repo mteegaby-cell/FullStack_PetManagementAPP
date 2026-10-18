@@ -2,10 +2,10 @@ import React, { Fragment, useState, useEffect } from "react";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
-import axios from "axios";
+import api from "./api";
 import { Link } from "react-router-dom";
 
-const API = "https://localhost:7242/api/Groomer";
+const API = "/groomer";
 const STATUSES = ["Scheduled", "CheckedIn", "InProgress", "Completed", "Cancelled"];
 
 const LMSCRUD = () => {
@@ -15,7 +15,7 @@ const LMSCRUD = () => {
     const [error, setError] = useState("");
 
     const load = () => {
-        axios
+        api
             .get(`${API}/appointments`, { params: filter ? { status: filter } : {} })
             .then((res) => setData(res.data))
             .catch(() => setError("Could not load appointments."));
@@ -28,7 +28,7 @@ const LMSCRUD = () => {
     const changeStatus = (id, status) => {
         setError("");
         setMessage("");
-        axios
+        api
             .put(`${API}/appointments/${id}/status`, { status })
             .then(() => {
                 setMessage("Status updated.");
