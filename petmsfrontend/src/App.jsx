@@ -72,10 +72,7 @@ export default function App() {
     path="/admin"
     element={
       <ProtectedRoute role="Admin">
-        <div>Admin Dashboard - Coming Soon 
-          <br/>
-          <a href = "/login">Return to Login</a>
-        </div>
+        <AdminLayout />
       </ProtectedRoute>
     }
   />
