@@ -1,11 +1,32 @@
+
 import { Navigate } from "react-router-dom";
 import { useAuth, homeFor } from "../AuthContext";
 
-// Blocks pages for people who are logged out or have the wrong role.
-// (The API enforces this too - this only keeps the UI tidy.)
+// Blocks pages for logged-out users or users with the wrong role.
 export default function ProtectedRoute({ role, children }) {
   const { auth } = useAuth();
-  if (!auth) return <Navigate to="/login" replace />;
-  if (role && !auth.roles.includes(role)) return <Navigate to={homeFor(auth.roles)} replace />;
+
+  // Redirect users who are not logged in.
+  if (!auth) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Safely retrieve the user's roles.
+  const roles = Array.isArray(auth.roles) ? auth.roles : [];
+
+  // Compare role names without case sensitivity.
+  const hasRole =
+    !role ||
+    roles.some(
+      (userRole) =>
+        userRole.toUpperCase() === role.toUpperCase()
+    );
+
+  // Redirect users who do not have the required role.
+  if (!hasRole) {
+    return <Navigate to={homeFor(roles)} replace />;
+  }
+
+  // Allow access if the user has the required role.
   return children;
 }

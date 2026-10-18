@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using PETMSCRUD.Models.Entities;
+using PETMSCRUD.Models;
 
 namespace PETMSCRUD.Data;
 
@@ -21,11 +21,19 @@ namespace PETMSCRUD.Data;
 
             // Unique business numbers
             b.Entity<PetOwner>().HasIndex(x => x.OwnerNumber).IsUnique();
-            b.Entity<Pet>().HasIndex(x => x.PetNumber).IsUnique();
+            b.Entity<PetOwner>().HasIndex(x => x.Email).IsUnique();
             b.Entity<Groomer>().HasIndex(x => x.StaffNumber).IsUnique();
+            b.Entity<Groomer>().HasIndex(x => x.Email).IsUnique();
+            b.Entity<Pet>().HasIndex(x => x.PetNumber).IsUnique();
+
 
             b.Entity<Pet>().Property(x => x.Weight).HasPrecision(6, 2);
             b.Entity<GroomingService>().Property(x => x.Price).HasPrecision(10, 2);
+
+            // ---- Store enums as readable strings ----
+            b.Entity<Pet>().Property(x => x.Gender).HasConversion<string>().HasMaxLength(10);
+            b.Entity<GroomingService>().Property(x => x.Status).HasConversion<string>().HasMaxLength(10);
+            b.Entity<Appointment>().Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
 
             // Identity user <-> PetOwner / Groomer (one login per person)
             b.Entity<PetOwner>().HasOne(o => o.User).WithMany()
@@ -62,5 +70,15 @@ namespace PETMSCRUD.Data;
                 .HasForeignKey(r => r.GroomerId).OnDelete(DeleteBehavior.Restrict);
             b.Entity<GroomingRecord>().HasOne(r => r.GroomingService).WithMany()
                 .HasForeignKey(r => r.GroomingServiceId).OnDelete(DeleteBehavior.Restrict);
-        }
+
+            // Appointment 1 -> 0..1 Grooming Record
+            b.Entity<GroomingRecord>().HasOne(r => r.Appointment).WithOne(a => a.GroomingRecord)
+                .HasForeignKey<GroomingRecord>(r => r.AppointmentId).OnDelete(DeleteBehavior.Restrict);
+
+            // ---- Link domain profiles to Identity accounts ----
+            b.Entity<PetOwner>().HasOne(o => o.User).WithMany()
+                .HasForeignKey(o => o.UserId).OnDelete(DeleteBehavior.Restrict);
+            b.Entity<Groomer>().HasOne(g => g.User).WithMany()
+                .HasForeignKey(g => g.UserId).OnDelete(DeleteBehavior.Restrict);
+    }
     }

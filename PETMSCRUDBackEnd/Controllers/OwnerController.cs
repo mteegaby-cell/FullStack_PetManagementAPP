@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PETMSCRUD.Data;
 using PETMSCRUD.Dtos;
-using PETMSCRUD.Models.Entities;
+using PETMSCRUD.Models;
 
 namespace PETMSCRUD.Controllers;
 
 [ApiController]
 [Route("api/owner")]
-[Authorize(Roles = "PetOwner")]          // only tokens carrying the PetOwner role get in
+[Authorize(Roles = Roles.PetOwner)]          // only tokens carrying the PetOwner role get in
 public class OwnerController : ControllerBase
 {
     private readonly PETMSDBContext _db;

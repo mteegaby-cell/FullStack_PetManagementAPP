@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PETMSCRUD.Data;
 using PETMSCRUD.Dtos;
-using PETMSCRUD.Models.Entities;
+using PETMSCRUD.Models;
 using PETMSCRUD.Services;
 
 namespace PETMSCRUD.Controllers;
@@ -54,7 +54,7 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(new { message = string.Join(" ", result.Errors.Select(e => e.Description)) });
 
-        await _users.AddToRoleAsync(user, "PetOwner");
+        await _users.AddToRoleAsync(user, Roles.PetOwner);
 
         var owner = new PetOwner
         {

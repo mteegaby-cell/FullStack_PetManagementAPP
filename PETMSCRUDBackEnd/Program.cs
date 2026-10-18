@@ -1,10 +1,7 @@
-//This is the integrated program which will have EVERYBODY's code integrated as cleanly as possible. 
-//The code will be copy pasted instead of being merged using git, for a better understanding of what's going on, and the reduction of duplicate code.
-//I will backup the main codebase before the merge so we can have a restore point that has no issues.
+// Integrated PETMSCRUD startup configuration.
+// Ensure role names used here match the constants in PETMSCRUD.Data.Roles
+// and any [Authorize(Roles = "...")] attributes throughout the application.
 
-//KEY : Thobile's changes = $$; Lithemba's Changes = &&; Ovayo's Changes = @@; Mpilwenhle's Changes = ^^;
-
-//Dependencies - ^^ + $$:
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,151 +9,150 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using PETMSCRUD.Models;//^^following 3 changed from PETCRUD to PETMSCRUD, added 6 errors lol
 using PETMSCRUD.Data;
+using PETMSCRUD.Models;
 using PETMSCRUD.Services;
-using PETMSCRUD.Models.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
-// Add services to the container.
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontEndPolicy", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5176")
+            .WithOrigins(
+                "http://localhost:5176",
+                "http://localhost:5173",
+                "http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
 
-//^^ + $$ | Added the second line 
-builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
 builder.Services.AddEndpointsApiExplorer();
-//$$ + ^^ Versions didn't match, used AI for TLC ^^
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Please enter token",
+        Description = "Enter a JWT bearer token.",
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
         Scheme = "Bearer"
     });
 
-    // Use the lambda overload to access the generated 'document'
-    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-    {
-        // Pass the string name and the document into the new reference type
-        [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
-    });
+    options.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] =
+                new List<string>()
+        });
 });
 
+var connectionString = builder.Configuration.GetConnectionString("DbConn");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "Database connection string 'DbConn' is missing.");
+}
 
-//^^ + $$ | PetOContext => PETMSDBCONTEXT in every instance 
 builder.Services.AddDbContext<PETMSDBContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DbConn"),
-            sql => sql.CommandTimeout(120)));
+    options.UseSqlServer(connectionString, sql => sql.CommandTimeout(120)));
 
-    //$$
-    // ASP.NET Identity: users and roles live in the same database
-    builder.Services.AddIdentity<ApplicationUser, IdentityRole>(o =>
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
-        o.Password.RequiredLength = 8;
-        o.User.RequireUniqueEmail = true;
+        options.Password.RequiredLength = 8;
+        options.User.RequireUniqueEmail = true;
     })
     .AddEntityFrameworkStores<PETMSDBContext>()
     .AddDefaultTokenProviders();
 
-    builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<TokenService>();
 
-    // JWT bearer authentication: React sends "Authorization: Bearer <token>"
-    var jwt = builder.Configuration.GetSection("Jwt");
-    builder.Services.AddAuthentication(o =>
+var jwt = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwt["Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "JWT signing key is missing. Configure Jwt:Key in appsettings or user secrets.");
+}
+
+if (string.IsNullOrWhiteSpace(jwt["Issuer"]) ||
+    string.IsNullOrWhiteSpace(jwt["Audience"]))
+{
+    throw new InvalidOperationException(
+        "JWT configuration must include Jwt:Issuer and Jwt:Audience.");
+}
+
+builder.Services
+    .AddAuthentication(options =>
     {
-        o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddJwtBearer(o =>
+    .AddJwtBearer(options =>
     {
-        o.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidIssuer = jwt["Issuer"],
             ValidateAudience = true,
             ValidAudience = jwt["Audience"],
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(1)
         };
     });
 
-    builder.Services.AddAuthorization();
+builder.Services.AddAuthorization();
 
-    // Allow the React dev server to call the API
-    builder.Services.AddCors(o => o.AddPolicy("React", p =>
-        p.WithOrigins("http://localhost:5173", "http://localhost:3000")
-         .AllowAnyHeader().AllowAnyMethod()));
+var app = builder.Build();
 
-    //^^
-    var app = builder.Build();
-
-    // Apply migrations, create roles, seed demo data
-    //$$
-    using (var scope = app.Services.CreateScope())
-    {
-        await SeedData.InitializeAsync(scope.ServiceProvider);
-    }
-
-    // Configure the HTTP request pipeline.
-    //^^
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    //$$
-    app.UseCors("FrontEndPolicy");// NOTE: no UseHttpsRedirection here so the React dev server can call http://localhost:5228 directly
-    app.UseAuthentication();// must come BEFORE UseAuthorization
-
-    //^^
-    app.UseAuthorization();
-    app.MapControllers();
-    app.Run();
-
-//$$
-public class AuthOperationFilter : Swashbuckle.AspNetCore.SwaggerGen.IOperationFilter
+// Migrate and seed through one startup scope. DbSeeder creates the configured
+// administrator and any missing base services. SeedData adds demo users and
+// related sample data. Both seeders should be idempotent.
+using (var scope = app.Services.CreateScope())
 {
-    public void Apply(OpenApiOperation op, Swashbuckle.AspNetCore.SwaggerGen.OperationFilterContext ctx)
-    {
-        var needsAuth =
-            ctx.MethodInfo.GetCustomAttributes(true).OfType<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any() ||
-            (ctx.MethodInfo.DeclaringType?.GetCustomAttributes(true)
-                .OfType<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any() ?? false);
-        var allowsAnon =
-            ctx.MethodInfo.GetCustomAttributes(true).OfType<Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>().Any() ||
-            (ctx.MethodInfo.DeclaringType?.GetCustomAttributes(true)
-                .OfType<Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute>().Any() ?? false);
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("StartupSeed");
 
-        //^^ Updated to be compatible with .Net 10.0 OpenApi standards
-        if (needsAuth && !allowsAnon)
-        {
-            op.Security = new List<OpenApiSecurityRequirement>
+    try
     {
-        new()
-        { 
-            // Change Array.Empty<string>() to a List representation
-            [new OpenApiSecuritySchemeReference("Bearer", null)] = []
-        }
-    };
-        }
+        // SeedData applies EF Core migrations before it queries seed tables.
+        // It also ensures Admin, Groomer and PetOwner roles exist.
+        await SeedData.InitializeAsync(services);
+
+        // This adds the configured SeedAdmin user and any missing base services.
+        // It is safe to run after SeedData once DbSeeder has been made idempotent.
+        await DbSeeder.SeedAsync(services);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        throw;
     }
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+
+app.UseCors("FrontEndPolicy");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
