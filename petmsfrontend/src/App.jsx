@@ -12,6 +12,8 @@ import PetDetails from "./pages/PetDetails";
 import Services from "./pages/Services";
 import BookAppointment from "./pages/BookAppointment";
 import Appointments from "./pages/Appointments";
+import GroomerDashboard from "./GroomerDashboard";
+import LMSCRUD from "./LMSCRUD";
 
 // Placeholders so Admin/Groomer logins land somewhere. Teammates replace these.
 const Placeholder = ({ title }) => (
@@ -20,7 +22,6 @@ const Placeholder = ({ title }) => (
     <p className="text-muted">This dashboard is built by another group member.</p>
   </Container>
 );
-
 export default function App() {
   const { auth } = useAuth();
 
@@ -48,10 +49,56 @@ export default function App() {
         <Route path="appointments" element={<Appointments />} />
       </Route>
 
-      <Route path="/admin" element={<ProtectedRoute role="Admin"><Placeholder title="Admin Dashboard" /></ProtectedRoute>} />
-      <Route path="/groomer" element={<ProtectedRoute role="Groomer"><Placeholder title="Groomer Dashboard" /></ProtectedRoute>} />
+      {/* Groomer area */}
+      <Route
+        path="/groomer"
+        element={
+          <ProtectedRoute role="Groomer">
+            <GroomerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/groomer/appointments"
+        element={
+          <ProtectedRoute role="Groomer">
+            <LMSCRUD />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Admin area */}
+      <Route
+    path="/admin"
+    element={
+      <ProtectedRoute role="Admin">
+        <div>Admin Dashboard - Coming Soon 
+          <br/>
+          <a href = "/login">Return to Login</a>
+        </div>
+      </ProtectedRoute>
+    }
+  />
+
+      {/* Backwards-compatible routes from the original App.jsx */}
+      <Route
+        path="/appointments"
+        element={
+          <ProtectedRoute role="Groomer">
+            <LMSCRUD />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pets/:id"
+        element={
+          <ProtectedRoute role="Groomer">
+            <PetDetails />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

@@ -2,9 +2,9 @@ namespace   PETMSCRUD.Models;
 
 public static class Roles
 {
-    public const string Admin = "Admin";
-    public const string Groomer = "Groomer";
-    public const string PetOwner = "PetOwner";
+    public const string Admin = "ADMIN";
+    public const string Groomer = "GROOMER";
+    public const string PetOwner = "PETOWNER";
 }
 
 public enum Gender { Male, Female }

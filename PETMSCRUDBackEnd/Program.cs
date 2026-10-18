@@ -149,6 +149,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseCors("FrontEndPolicy");
 app.UseAuthentication();
 app.UseAuthorization();

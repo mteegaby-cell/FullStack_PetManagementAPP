@@ -10,7 +10,7 @@ namespace LMSCRUD.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Groomer")]   // PERSON 4: uncomment after Identity is merged
+    [Authorize(Roles = Roles.Groomer)]   // PERSON 4: uncomment after Identity is merged
     public class GroomerController : ControllerBase
     {
         private readonly PETMSDBContext dbContext;
