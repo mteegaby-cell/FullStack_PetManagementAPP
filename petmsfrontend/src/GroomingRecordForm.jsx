@@ -3,9 +3,9 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
-import axios from "axios";
+import api from "./api";
 
-const API = "https://localhost:7242/api/Groomer";
+const API = "/groomer";
 const today = () => new Date().toISOString().slice(0, 10);
 
 const GroomingRecordForm = ({ show, onHide, petId, onSaved }) => {
@@ -34,7 +34,7 @@ const GroomingRecordForm = ({ show, onHide, petId, onSaved }) => {
 
     setSaving(true);
     setApiError("");
-    axios
+    api
       .post(`${API}/records`, {
         petId: Number(petId),
         groomingDate: date,
