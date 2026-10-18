@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { homeFor } from "../utils";
+import { homeFor } from "./AuthContext";
 
 /** Blocks the page unless logged in (and, if `role` is given, unless the user has that role). */
 export default function ProtectedRoute({ role, children }) {

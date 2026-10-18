@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Alert, Button, Card, Container, Form, Spinner } from "react-bootstrap";
 import { Navigate, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
-import { getError, homeFor, isEmail } from "../utils";
+import { useAuth } from "../AuthContext";
 
 export default function Login() {
   const { user, login } = useAuth();

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "react-bootstrap";
 import api from "../../api";
 import CrudPage from "../../components/CrudPage";
-import { APPOINTMENT_STATUSES, hhmm, money, statusLabel, statusVariant, todayISO } from "../../utils";
+import { APPOINTMENT_STATUSES, hhmm, money, statusLabel, statusVariant, todayISO } from "../../../utils";
 
 const columns = [
   { header: "Date", cell: (r) => r.appointmentDate },

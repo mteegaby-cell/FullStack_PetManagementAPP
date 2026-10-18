@@ -1,6 +1,6 @@
 import { Badge } from "react-bootstrap";
 import CrudPage from "../../components/CrudPage";
-import { money, statusVariant } from "../../utils";
+import { money, statusVariant } from "../../../utils";
 
 const fields = [
   { name: "serviceName", label: "Service Name", required: true },

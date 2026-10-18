@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Badge, Card, Col, Row, Spinner, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import api from "../../api";
-import { APPOINTMENT_STATUSES, getError, hhmm, statusLabel, statusVariant, todayISO } from "../../utils";
+import { APPOINTMENT_STATUSES, getError, hhmm, statusLabel, statusVariant, todayISO } from "../../../utils";
 
 const tiles = [
   { key: "owners", label: "Pet Owners", to: "/admin/owners", icon: "👤" },

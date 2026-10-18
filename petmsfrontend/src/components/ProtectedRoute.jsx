@@ -1,6 +1,5 @@
-
 import { Navigate } from "react-router-dom";
-import { useAuth, homeFor } from "../AuthContext";
+import { useAuth, homeFor } from "./../AuthContext";
 
 // Blocks pages for logged-out users or users with the wrong role.
 export default function ProtectedRoute({ role, children }) {
@@ -30,3 +29,4 @@ export default function ProtectedRoute({ role, children }) {
   // Allow access if the user has the required role.
   return children;
 }
+
