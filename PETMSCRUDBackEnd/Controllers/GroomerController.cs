@@ -10,7 +10,7 @@ namespace LMSCRUD.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = Roles.Groomer)]   // PERSON 4: uncomment after Identity is merged
+    [Authorize(Roles = Roles.Admin)]   // PERSON 4: uncomment after Identity is merged
     public class GroomerController : ControllerBase
     {
         private readonly PETMSDBContext dbContext;
@@ -30,10 +30,26 @@ namespace LMSCRUD.Controllers
         // ------------------------------------------------------------------
         private async Task<Groomer?> GetCurrentGroomer()
         {
-            //int id = int.TryParse(Request.Headers["X-Dev-GroomerId"], out var h) ? h : 1;
-            //return await dbContext.Groomers.FirstOrDefaultAsync(g => g.Id == id);
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-             return await dbContext.Groomers.FirstOrDefaultAsync(g => g.UserId == userId);
+
+            Console.WriteLine($"Logged-in User ID: {userId}");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                Console.WriteLine("ERROR: User ID claim is missing.");
+                return null;
+            }
+
+            var groomer = await dbContext.Groomers
+                .FirstOrDefaultAsync(g => g.UserId == userId);
+
+            Console.WriteLine(
+                groomer == null
+                    ? "ERROR: No groomer found for this User ID."
+                    : $"Groomer found: {groomer.Name} {groomer.Surname}, ID: {groomer.Id}"
+            );
+
+            return groomer;
         }
 
         // A groomer may only see a pet they have an appointment for
