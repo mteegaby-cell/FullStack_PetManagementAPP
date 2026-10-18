@@ -10,7 +10,7 @@ namespace PETMSCRUD.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = Roles.Groomer)]
+[Authorize(Roles = $"{Roles.Admin},{Roles.PetOwner}.{Roles.Groomer}")]
 public class AppointmentsController(PETMSDBContext db) : ControllerBase
 {
     // Salon opening hours (minutes from midnight). Adjust to suit Paws & Care.

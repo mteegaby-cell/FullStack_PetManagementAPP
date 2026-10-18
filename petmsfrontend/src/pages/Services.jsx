@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import api, { errMsg } from "../api";
+import api, { errMsg } from "./../api";
 import { ErrorAlert, Loading, fmtMoney } from "../components/Common";
 
 export default function Services() {

@@ -12,7 +12,7 @@ namespace PETMSCRUD.Controllers;
 // read-only endpoint with [Authorize(Roles = "Admin,Groomer,PetOwner")] if your team wants one.)
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = Roles.Admin)]
+[Authorize(Roles = $"{Roles.Admin},{Roles.PetOwner}.{Roles.Groomer}")]
 public class ServicesController(PETMSDBContext db) : ControllerBase
 {
     private static readonly Expression<Func<GroomingService, ServiceResponse>> ToResponse = s =>

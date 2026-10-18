@@ -1,33 +1,45 @@
 import { createContext, useContext, useState } from "react";
-import api from "../api";
+import api from "./api";
 
-const KEY = "pawscare_auth";
-const AuthContext = createContext(null);
-export const useAuth = () => useContext(AuthContext);
+const AuthCtx = createContext(null);
 
-function loadStored() {
-  try {
-    const a = JSON.parse(localStorage.getItem(KEY));
-    if (a && new Date(a.expiresAt) > new Date()) return a;
-  } catch { /* ignore */ }
-  localStorage.removeItem(KEY);
-  return null;
-}
+export const useAuth = () => useContext(AuthCtx);
+
+// Each role lands on its own dashboard
+export const homeFor = (roles = []) => {
+  const normalizedRoles = roles.map((role) => role.toUpperCase());
+
+  if (normalizedRoles.includes("ADMIN")) return "/admin";
+  if (normalizedRoles.includes("GROOMER")) return "/groomer";
+
+  return "/owner";
+};
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(loadStored); // { token, email, fullName, role, expiresAt }
+  const [auth, setAuth] = useState(() =>
+    JSON.parse(localStorage.getItem("auth") || "null")
+  );
 
   const login = async (email, password) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    localStorage.setItem(KEY, JSON.stringify(data));
-    setUser(data);
+    const { data } = await api.post("/auth/login", {
+      email,
+      password,
+    });
+
+    localStorage.setItem("auth", JSON.stringify(data));
+    setAuth(data);
+
     return data;
   };
 
   const logout = () => {
-    localStorage.removeItem(KEY);
-    setUser(null);
+    localStorage.removeItem("auth");
+    setAuth(null);
   };
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthCtx.Provider value={{ auth, login, logout }}>
+      {children}
+    </AuthCtx.Provider>
+  );
 }

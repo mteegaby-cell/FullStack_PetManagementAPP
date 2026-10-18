@@ -2,6 +2,7 @@
 // Ensure role names used here match the constants in PETMSCRUD.Data.Roles
 // and any [Authorize(Roles = "...")] attributes throughout the application.
 
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -99,20 +100,55 @@ builder.Services
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddJwtBearer(options =>
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        ValidateIssuer = true,
+        ValidIssuer = jwt["Issuer"],
+        ValidateAudience = true,
+        ValidAudience = jwt["Audience"],
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtKey)),
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromMinutes(1),
+
+        // Use the standard .NET role claim after normalization.
+        RoleClaimType = ClaimTypes.Role
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = context =>
         {
-            ValidateIssuer = true,
-            ValidIssuer = jwt["Issuer"],
-            ValidateAudience = true,
-            ValidAudience = jwt["Audience"],
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1)
-        };
-    });
+            if (context.Principal?.Identity is ClaimsIdentity identity)
+            {
+                // Accept both "role" and "roles" claim types.
+                var roleClaims = identity.Claims
+                    .Where(c =>
+                        c.Type == "role" ||
+                        c.Type == "roles" ||
+                        c.Type == ClaimTypes.Role)
+                    .Select(c => c.Value)
+                    .Distinct()
+                    .ToList();
+
+                foreach (var role in roleClaims)
+                {
+                    if (!identity.HasClaim(ClaimTypes.Role, role))
+                    {
+                        identity.AddClaim(
+                            new Claim(ClaimTypes.Role, role));
+                    }
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+    };
+});
+
 
 builder.Services.AddAuthorization();
 

@@ -16,7 +16,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
 
   // Get the logged-in user's details safely.
-  const user = auth?.user ?? auth;
+  const user = auth?.user;
 
   const handleLogout = () => {
     logout();

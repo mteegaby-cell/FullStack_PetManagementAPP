@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173, // Your frontend React server port
+    port: 3000, // Your frontend React server port
     proxy: {
       // Forwards any frontend request starting with '/api' to your .NET backend
       "/api": {
